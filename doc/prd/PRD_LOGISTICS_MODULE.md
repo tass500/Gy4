@@ -1,7 +1,26 @@
 # Project Requirement Document (PRD) - Logisztikai Modul
 
 ## Áttekintés
-Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív logisztikai modul fejlesztésére, amely mikroszerviz architektúrára épül. A modul célja a raktári funkciók, csomagküldés, számlázás, valamint be- és kivételezés kezelése. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra, összhangban a CODING_REQUIREMENTS.md dokumentumban leírtakkal. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (i18n), és teljes akadálymentesítéssel (a11y) rendelkezik.
+Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív logisztikai modul fejlesztésére, amely mikroszerviz architektúrára épül és Kubernetes-kompatibilis környezetben fut. A modul célja a raktári funkciók, csomagküldés, számlázás, valamint be- és kivételezés kezelése. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra, összhangban a CODING_REQUIREMENTS.md dokumentumban leírtakkal.
+
+### Főbb technológiák
+- **Frontend**: TypeScript, Angular (lásd: CODING_REQUIREMENTS.md - Frontend Design Pattern-ek)
+- **Backend**: .NET Core 6.0+ (C#)
+- **Adatbázis**: MS SQL Server 2022
+- **Üzenetküldés**: Apache Kafka
+- **Stream feldolgozás**: Apache Flink
+- **Konténerizáció**: Docker
+- **Orchestráció**: Kubernetes
+- **Monitorozás**: Prometheus + Grafana
+- **Naplózás**: ELK Stack (Elasticsearch, Logstash, Kibana)
+
+### Architekturális elvek
+- **Mikroszolgáltatás architektúra**
+- **Event-driven design**
+- **Domain-Driven Design (DDD)**
+- **CQRS és Event Sourcing** kiválasztott modulokban
+- **Többnyelvűség (i18n) és akadálymentesítés (a11y)** támogatás
+- **CI/CD folyamatok** automatikus teszteléssel
 
 A projekt kezdeti fázisa egy egyszerű üdvözlő oldal létrehozása, amely bemutatja a modult. A további funkcionalitásokat (raktári funkciók, csomagküldés, számlázás, be-/kivételezés) a későbbiekben fogjuk megadni és implementálni.
 
@@ -17,6 +36,41 @@ A projekt kezdeti fázisa egy egyszerű üdvözlő oldal létrehozása, amely be
 - **Felhasználók**: Logisztikai dolgozók, raktárvezetők, adminisztrátorok.
 
 ## 2. Rendszerarchitektúra
+
+### 2.0 Mikroszolgáltatás Struktúra
+
+A rendszer a következő főbb szolgáltatásokból fog állni:
+
+1. **API Gateway** (Ocelot/YARP)
+   - Bejövő kérések útválasztása
+   - Hitelesítés és engedélyezés
+   - Terheléselosztás
+   - Gyorsítótárazás
+
+2. **Felhasználói Felület** (Angular)
+   - Reszponzív webes felület
+   - Progresszív Web App (PWA) támogatás
+   - Offline működés támogatása
+
+3. **Logisztikai Alapszolgáltatás** (.NET Core)
+   - Alapvető logisztikai műveletek
+   - Adatintegritás biztosítása
+   - Tranzakciókezelés
+
+4. **Raktárkezelő Szolgáltatás** (.NET Core)
+   - Készletnyilvántartás
+   - Raktárhelyek kezelése
+   - Készletmozgások nyomon követése
+
+5. **Szállítási Szolgáltatás** (.NET Core)
+   - Csomagküldés kezelése
+   - Szállítási címkék generálása
+   - Szállítási státusz követése
+
+6. **Számlázási Szolgáltatás** (.NET Core)
+   - Számlák generálása
+   - Fizetések kezelése
+   - Kimutatások készítése
 
 ### 2.1 Képernyő-öröklődési modell
 
@@ -38,70 +92,242 @@ A rendszer egy közös ős-képernyőből (BaseScreen) származtatott képernyő
 
 ### 2.2 Frontend implementáció
 
+A frontend Angular keretrendszerre épül, és a következő tervezési mintákat követi:
+
+#### 2.2.1 Alapvető szerkezet
+
 ```typescript
-// Példa a BaseScreen osztályra
-abstract class BaseScreen {
-  // Közös állapotok
-  protected loading: boolean = false;
-  protected error: string | null = null;
+// Példa a BaseScreen osztályra (Angular komponens)
+@Component({
+  template: `
+    <div class="base-screen">
+      <app-header [title]="title" [loading]="loading"></app-header>
+      
+      <main>
+        <ng-container *ngIf="loading">
+          <app-loading-spinner></app-loading-spinner>
+        </ng-container>
+        
+        <app-error-message *ngIf="error" [message]="error"></app-error-message>
+        
+        <div *ngIf="!loading && !error" class="content">
+          <ng-content></ng-content>
+        </div>
+      </main>
+      
+      <app-footer></app-footer>
+    </div>
+  `,
+  styleUrls: ['./base-screen.component.scss']
+})
+export abstract class BaseScreenComponent implements OnInit, OnDestroy {
+  @Input() title: string = '';
+  loading: boolean = false;
+  error: string | null = null;
   
-  // Kötelezően implementálandó metódusok
-  abstract renderContent(): JSX.Element;
+  // Dependency injection a szükséges szolgáltatásokhoz
+  constructor(
+    protected translate: TranslateService,
+    protected errorHandler: ErrorHandlerService,
+    protected loadingService: LoadingService
+  ) {}
   
-  // Közös metódusok
-  protected showLoading(): void {
-    this.loading = true;
-    this.error = null;
+  // Életciklus metódusok
+  ngOnInit(): void {
+    this.initialize();
   }
   
-  protected handleError(error: Error): void {
-    this.error = error.message;
+  ngOnDestroy(): void {
+    this.cleanup();
+  }
+  
+  // Kötelezően implementálandó metódusok
+  protected abstract initialize(): void;
+  protected abstract cleanup(): void;
+  
+  // Közös metódusok
+  protected setLoading(state: boolean): void {
+    this.loading = state;
+    this.loadingService.setLoading(state);
+  }
+  
+  protected handleError(error: any): void {
+    this.error = this.errorHandler.handleError(error);
     this.loading = false;
   }
   
-  // Sablon metódus
-  public render(): JSX.Element {
-    return (
-      <div className="base-screen">
-        {this.renderHeader()}
-        <main>
-          {this.loading && <LoadingSpinner />}
-          {this.error && <ErrorMessage message={this.error} />}
-          {!this.loading && !this.error && this.renderContent()}
-        </main>
-        {this.renderFooter()}
-      </div>
-    );
+  // Nyelvváltás kezelése
+  protected changeLanguage(lang: string): void {
+    this.translate.use(lang);
+    localStorage.setItem('userLanguage', lang);
   }
 }
 ```
 
-### 2.3 Backend implementáció
+#### 2.2.2 State Management (NgRx)
+
+```typescript
+// Állapotkezelés NgRx-el
+@Injectable()
+export class ScreenEffects {
+  constructor(
+    private actions$: Actions,
+    private screenService: ScreenService
+  ) {}
+
+  loadScreenData$ = createEffect(() => 
+    this.actions$.pipe(
+      ofType(ScreenActions.loadScreenData),
+      switchMap(({ screenId }) => 
+        this.screenService.getScreenData(screenId).pipe(
+          map(data => ScreenActions.loadScreenDataSuccess({ data })),
+          catchError(error => of(ScreenActions.loadScreenDataFailure({ error })))
+        )
+      )
+    )
+  );
+}
+```
+```
+
+### 2.3 Backend implementáció (.NET Core)
+
+#### 2.3.1 Alapvető szerkezet
 
 ```csharp
-// Példa a BaseScreen modellre
+// Alap modell a képernyőkhöz
 public abstract class BaseScreenModel
 {
-    // Közös mezők
-    public string Title { get; set; }
-    public bool IsLoading { get; set; }
-    public string ErrorMessage { get; set; }
-    public string CurrentLanguage { get; set; }
+    [JsonIgnore]
+    public string RequestId { get; set; } = Guid.NewGuid().ToString();
     
-    // Közös metódusok
-    protected void Initialize(string title)
+    [JsonIgnore]
+    public bool IsLoading { get; protected set; }
+    
+    [JsonIgnore]
+    public string ErrorMessage { get; protected set; }
+    
+    public string CurrentLanguage { get; set; } = "hu";
+    
+    [JsonIgnore]
+    public Dictionary<string, string> ValidationErrors { get; } = new();
+    
+    protected virtual void Initialize()
     {
-        this.Title = title;
         this.IsLoading = false;
-        this.CurrentLanguage = "hu"; // Alapértelmezett nyelv
+        this.ErrorMessage = string.Empty;
     }
     
-    protected void SetError(string message)
+    protected void SetError(string message, Exception ex = null)
     {
         this.ErrorMessage = message;
         this.IsLoading = false;
+        // Logolás stb.
+    }
+    
+    public virtual void ClearValidation()
+    {
+        this.ValidationErrors.Clear();
     }
 }
+
+// Alap kontroller osztály
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+[Authorize]
+public abstract class BaseApiController : ControllerBase
+{
+    protected readonly ILogger _logger;
+    protected readonly IMediator _mediator;
+    
+    protected BaseApiController(ILogger logger, IMediator mediator)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    }
+    
+    protected async Task<ActionResult<T>> HandleQuery<T>(IRequest<T> query)
+    {
+        try
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred");
+            return BadRequest(ex.Errors);
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Resource not found");
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while processing your request");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+}
+```
+
+#### 2.3.2 CQRS implementáció
+
+```csharp
+// Példa Command és CommandHandler implementációra
+public class CreateOrderCommand : IRequest<OrderDto>
+{
+    public string OrderNumber { get; set; }
+    public DateTime OrderDate { get; set; }
+    public List<OrderItemDto> Items { get; set; }
+}
+
+public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, OrderDto>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<CreateOrderCommandHandler> _logger;
+    
+    public CreateOrderCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        ILogger<CreateOrderCommandHandler> logger)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _logger = logger;
+    }
+    
+    public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    {
+        var order = new Order
+        {
+            OrderNumber = request.OrderNumber,
+            OrderDate = request.OrderDate,
+            Status = OrderStatus.Created,
+            CreatedBy = _currentUserService.UserId,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        // Tovább feldolgozás...
+        
+        await _context.Orders.AddAsync(order, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("Order {OrderId} created successfully", order.Id);
+        
+        return new OrderDto
+        {
+            Id = order.Id,
+            OrderNumber = order.OrderNumber,
+            OrderDate = order.OrderDate,
+            Status = order.Status.ToString()
+        };
+    }
+}
+```
 ```
 
 ## 3. Funkcionalitás (Kezdeti Fázis)
