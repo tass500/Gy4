@@ -1,7 +1,7 @@
 # Kódolási Követelmény Dokumentum: Modern Reszponzív Webes Alkalmazás Fejlesztése
 
 ## Áttekintés
-Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes alkalmazás fejlesztésére, amely mikroszerviz architektúrára épül. A frontend natív JavaScript, HTML és CSS használatával készül, a backend pedig C# .NET alapokon. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (internationalization - i18n), és teljes akadálymentesítéssel (accessibility - a11y) rendelkezik.
+Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes alkalmazás fejlesztésére, amely mikroszerviz architektúrára épül. A frontend natív JavaScript, HTML és CSS használatával készül, a backend pedig C# .NET alapokon. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (internationalization - i18n), és teljes akadálymentesítéssel (accessibility - a11y) rendelkezik. Minden kódgenerálás során teszteket kell létrehozni és futtatni, amíg sikeresek nem lesznek, és minden commit előtt az összes tesztet futtatni kell.
 
 ## 1. Architektúra és Szerkezet
 - **Mikroszerviz Alapú Felépítés**: Az alkalmazás különálló, egymástól független mikroszervizekből álljon, amelyek önállóan telepíthetőek és skálázhatóak. Minden mikroszerviz saját felelősségi körrel rendelkezzen (pl. frontend UI, backend API, adatbázis szolgáltatások, lokalizáció szolgáltatás, akadálymentesítés szolgáltatás).
@@ -25,13 +25,14 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes 
   - **E2E Tesztek**: Teljes felhasználói folyamatok tesztelése (pl. Selenium, Cypress frontendhez), amelyek az adatbázis réteget, lokalizációt és akadálymentesítést is érintik.
   - **Teljesítmény Tesztek**: Load testing a skálázhatóság biztosításához, különösen az adatbázis lekérdezésekhez, lokalizált tartalom betöltéséhez és a11y elemekhez.
 - **Teszt Fedettség**: Legalább 80% kódlefedettség unit tesztekkel, beleértve az adatbázis logikát, i18n és a11y funkciókat.
-- **Automatizált Teszt Futtatás**: Minden commit/pull request előtt futtassa a teszteket, beleértve az adatbázis migrációk, lokalizáció és a11y tesztelését.
+- **Automatizált Teszt Futtatás**: Minden commit/pull request előtt futtassa a teszteket, beleértve az adatbázis migrációk, lokalizáció és a11y tesztelését. Minden kódgenerálás során hozzon létre teszteket a generált kódhoz, és futtassa őket, amíg sikeresek nem lesznek.
+- **Tesztelési Eljárás**: Minden új kódgeneráláskor (pl. függvény, osztály, komponens) automatikusan generáljon unit és integrációs teszteket. Futtassa őket helyi környezetben, és javítson minden hibát, amíg a tesztek nem sikeresek. Minden commit előtt futtassa az összes tesztet (unit, integrációs, E2E, teljesítmény), és csak akkor engedje a commit-ot, ha minden teszt sikeres.
 
 ## 4. CI/CD Folyamatok
 - **Continuous Integration (CI)**:
   - Automatizált build minden commitra (pl. GitHub Actions, Azure DevOps).
   - Kódminőség ellenőrzés: Linting (ESLint JS-hez, StyleCop C#-hoz), statikus analízis (SonarQube), beleértve az adatbázis sémát, lokalizáció fájlokat és a11y ellenőrzéseket.
-  - Automatizált teszt futtatás minden build során, beleértve az adatbázis teszteket, i18n validációt és a11y scannereket (pl. axe-core).
+  - Automatizált teszt futtatás minden build során, beleértve az adatbázis teszteket, i18n validációt és a11y scannereket (pl. axe-core). Futtassa az összes tesztet minden commit előtt, és blokkolja a build-et, ha bármelyik teszt sikertelen.
 - **Continuous Deployment (CD)**:
   - Automatizált deploy staging és production környezetekbe sikeres build és teszt után.
   - Használjon containerizálást (Docker) a mikroszervizekhez, beleértve az adatbázis konténereket, lokalizáció fájlokat és a11y eszközöket.
@@ -81,13 +82,20 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes 
 - **Tesztelés**: Automatizált a11y scannerek (pl. axe-core, Lighthouse Accessibility audit) minden build során. Manuális tesztelés különböző eszközökkel (pl. képernyőolvasók).
 - **CI/CD Integráció**: A11y ellenőrzések automatizálása, sikertelen build, ha nem felel meg a WCAG 2.1-nek.
 
-## 11. Ellenőrzőlista Kódgenerálás Előtt
+## 11. Kódgenerálás és Tesztelési Folyamat
+- **Automatizált Teszt Generálás**: Minden kódgenerálás során (pl. új függvény, osztály, mikroszerviz) automatikusan generáljon unit és integrációs teszteket a generált kódhoz. Használjon eszközöket, mint a Jest/Mocha (JS) vagy xUnit (C#) a tesztgeneráláshoz.
+- **Teszt Futtatás és Iteráció**: A generált teszteket azonnal futtassa helyi környezetben. Ha a tesztek sikertelenek, javítson a kódon vagy a teszteken, és futtassa újra, amíg minden teszt nem sikerül. Ez biztosítja a kód minőségét és tesztelhetőségét.
+- **Commit Előtti Teszt Futtatás**: Minden commit előtt futtassa az összes tesztet (unit, integrációs, E2E, teljesítmény). Csak akkor engedje a commit-ot, ha minden teszt sikeres. Ez részét képezi a CI/CD pipeline-nak.
+- **Eszközök**: Használjon pre-commit hook-okat (pl. Husky JS-hez) a lokális teszt futtatáshoz, és GitHub Actions-t a távoli teszteléshez.
+
+## 12. Ellenőrzőlista Kódgenerálás Előtt
 Mielőtt bármilyen kódot generálnék, ellenőrizzem:
 - A generált kód megfelel-e a SOLID elveknek?
-- Van-e megfelelő tesztelhetőség (unit/integrációs tesztek, beleértve az adatbázist, i18n-t és a11y-t)?
+- Van-e megfelelő tesztelhetőség (unit/integrációs tesztek, beleértve az adatbázist, i18n-t és a11y-t), és sikeresen futtatva lettek-e?
 - Karbantartható-e (dokumentált, moduláris)?
 - Integrálható-e a CI/CD pipeline-ba, beleértve az adatbázis migrációkat, lokalizációt és a11y-t?
 - Reszponzív és biztonságos-e?
 - Mikroszerviz architektúrához illeszkedik-e, MS SQL Server 2022-vel kompatibilis, támogatja a többnyelvűséget és teljes akadálymentesítéssel rendelkezik?
+- Sikeresek-e az összes teszt minden kódgenerálás és commit előtt?
 
 Ez a dokumentum alapvető irányelv minden fejlesztési tevékenységhez. Bármilyen eltérés indokolt legyen és dokumentált.
