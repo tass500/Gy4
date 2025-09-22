@@ -1,7 +1,7 @@
 # Kódolási Követelmény Dokumentum: Modern Reszponzív Webes Alkalmazás Fejlesztése
 
 ## Áttekintés
-Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes alkalmazás fejlesztésére, amely mikroszerviz architektúrára épül. A frontend natív JavaScript, HTML és CSS használatával készül, a backend pedig C# .NET alapokon. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (internationalization - i18n), és teljes akadálymentesítéssel (accessibility - a11y) rendelkezik. Minden kódgenerálás során teszteket kell létrehozni és futtatni, amíg sikeresek nem lesznek, és minden commit előtt az összes tesztet futtatni kell.
+Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes alkalmazás fejlesztésére, amely mikroszerviz architektúrára épül. A frontend natív JavaScript, HTML és CSS használatával készül, a backend pedig C# .NET alapokon. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (internationalization - i18n), és teljes akadálymentesítéssel (accessibility - a11y) rendelkezik. Minden kódgenerálás során teszteket kell létrehozni és futtatni, amíg sikeresek nem lesznek, és minden commit előtt az összes tesztet futtatni kell. Minden kódgenerálás mobile-first megközelítéssel történik, prioritizálva a mobil eszközökre optimalizálást.
 
 ## 1. Architektúra és Szerkezet
 - **Mikroszerviz Alapú Felépítés**: Az alkalmazás különálló, egymástól független mikroszervizekből álljon, amelyek önállóan telepíthetőek és skálázhatóak. Minden mikroszerviz saját felelősségi körrel rendelkezzen (pl. frontend UI, backend API, adatbázis szolgáltatások, lokalizáció szolgáltatás, akadálymentesítés szolgáltatás).
@@ -87,6 +87,7 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes 
 - **Teszt Futtatás és Iteráció**: A generált teszteket azonnal futtassa helyi környezetben. Ha a tesztek sikertelenek, javítson a kódon vagy a teszteken, és futtassa újra, amíg minden teszt nem sikerül. Ez biztosítja a kód minőségét és tesztelhetőségét.
 - **Commit Előtti Teszt Futtatás**: Minden commit előtt futtassa az összes tesztet (unit, integrációs, E2E, teljesítmény). Csak akkor engedje a commit-ot, ha minden teszt sikeres. Ez részét képezi a CI/CD pipeline-nak.
 - **Eszközök**: Használjon pre-commit hook-okat (pl. Husky JS-hez) a lokális teszt futtatáshoz, és GitHub Actions-t a távoli teszteléshez.
+- **Mobile-First Megközelítés**: Minden kódgenerálás során prioritizáljon a mobil eszközökre optimalizálást. Kezdje a CSS és layout tervezést mobil nézettel, majd skálázza fel nagyobb képernyőkre. Biztosítsa a reszponzivitást media queries és flexible grid rendszerekkel.
 
 ## 12. Ellenőrzőlista Kódgenerálás Előtt
 Mielőtt bármilyen kódot generálnék, ellenőrizzem:
@@ -97,5 +98,6 @@ Mielőtt bármilyen kódot generálnék, ellenőrizzem:
 - Reszponzív és biztonságos-e?
 - Mikroszerviz architektúrához illeszkedik-e, MS SQL Server 2022-vel kompatibilis, támogatja a többnyelvűséget és teljes akadálymentesítéssel rendelkezik?
 - Sikeresek-e az összes teszt minden kódgenerálás és commit előtt?
+- Mobile-first megközelítéssel készült-e, prioritizálva a mobil optimalizálást?
 
 Ez a dokumentum alapvető irányelv minden fejlesztési tevékenységhez. Bármilyen eltérés indokolt legyen és dokumentált.
