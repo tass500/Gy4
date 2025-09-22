@@ -20,17 +20,37 @@ A projekt kezdeti fázisa egy egyszerű üdvözlő oldal létrehozása, amely be
 - **Üdvözlő Oldal**:
   - Egyszerű, reszponzív design mobil-először megközelítéssel.
   - Üdvözlő üzenet a modulról.
+  - Interaktív gomb, amely mikroszerviz hívást indít és megjeleníti az üdvözlő üzenetet.
+  - A gombnak láthatónak kell lennie és könnyen elérhetőnek a felhasználók számára.
+  - A mikroszerviz hívás aszinkron módon történik, és a válaszban kapott üzenet jelenik meg a felhasználónak.
+  - Hiba esetén felhasználóbarát hibaüzenet megjelenítése.
   - Navigációs menü (készülék a későbbi oldalakra, de kezdetben csak dekoratív).
   - Alapvető i18n támogatás (pl. magyar és angol nyelv).
-  - WCAG 2.1 AA szintű akadálymentesítés (ARIA címkék, billentyűzet navigáció, színkontraszt).
+  - WCAG 2.1 AA szintű akadálymentesítés (ARIA címkék, billentyűzet navigáció, színkontraszt, fókuszkezelés).
 
-## 3. Nem Funkcionalitás Követelmények
+## 3. Mikroszerviz Specifikáció (Üdvözlő Funkció)
+- **Végpont**: `/api/greeting`
+- **Metódus**: GET
+- **Válasz formátuma**: JSON
+  ```json
+  {
+    "message": "Üdvözöljük a Logisztikai Modulban!"
+  }
+  ```
+- **Hibakezelés**: 
+  - 200 OK: Sikeres kérés, visszaadja az üdvözlő üzenetet
+  - 500 Internal Server Error: Szerverhiba esetén
+  - 503 Service Unavailable: Ha a szolgáltatás nem elérhető
+- **Időtúllépés**: 5 másodperc
+- **Újrapróbálkozás**: 2 alkalommal történik automatikus újrapróbálkozás hiba esetén
+
+## 4. Nem Funkcionalitás Követelmények
 - **Teljesítmény**: Gyors betöltés, optimalizált API hívások.
 - **Biztonság**: HTTPS, input validáció, SQL injection védelem.
 - **Skálázhatóság**: Mikroszerviz architektúra, hogy könnyen bővíthető legyen a későbbi funkcionalitásokkal.
 - **Kompatibilitás**: Modern böngészők, mobil eszközök.
 
-## 4. Architektúra és Technológia
+## 5. Architektúra és Technológia
 - **Mikroszerviz Alapú Felépítés**: Külön mikroszervizek a frontend (JS/HTML/CSS), backend (C# .NET), adatbázis (MS SQL Server 2022) és egyéb szolgáltatások (lokalizáció, akadálymentesítés) számára.
 - **Frontend**: ES6+ JavaScript, CSS Grid/Flexbox, i18next i18n könyvtár.
 - **Backend**: C# .NET Core/6+, Entity Framework Core (EF Core) az adatbázis eléréséhez.
@@ -38,29 +58,29 @@ A projekt kezdeti fázisa egy egyszerű üdvözlő oldal létrehozása, amely be
 - **Többnyelvűség (i18n)**: JSON fájlok (hu.json, en.json) frontendben, .NET IStringLocalizer backendben.
 - **Akadálymentesítés (a11y)**: ARIA címkék, billentyűzet navigáció, Lighthouse/axe-core tesztelés.
 
-## 5. Fejlesztési Szakaszok
+## 6. Fejlesztési Szakaszok
 - **1. Fázis**: Üdvözlő oldal fejlesztése és tesztelése.
 - **2. Fázis**: Raktári funkciók implementálása (későbbiekben részletezendő).
 - **3. Fázis**: Csomagküldés funkciók.
 - **4. Fázis**: Számlázás és be-/kivételezés.
 
-## 6. Tesztelhetőség
+## 7. Tesztelhetőség
 - **Unit Tesztek**: Minden komponens tesztelve (Jest/Mocha JS-hez, xUnit .NET-hez).
 - **Integrációs Tesztek**: Adatbázis interakciók tesztelése in-memory SQL Serverrel.
 - **E2E Tesztek**: Teljes folyamatok (Selenium/Cypress).
 - **Teljesítmény Tesztek**: Load testing.
 - **Automatizált Teszt Futtatás**: Minden commit/pull request előtt, sikertelen build blokkolás.
 
-## 7. CI/CD Folyamatok
+## 8. CI/CD Folyamatok
 - **CI**: Automatizált build (GitHub Actions), linting, statikus analízis, teszt futtatás.
 - **CD**: Deploy staging/production-ba, rollback mechanizmus.
 - **Monitoring**: Logging (Serilog .NET, Winston JS), Application Insights.
 
-## 8. Kockázatok és Korlátok
+## 9. Kockázatok és Korlátok
 - **Kockázatok**: Adatbázis teljesítmény, i18n fordítások késedelme.
 - **Korlátok**: Kezdetben csak üdvözlő oldal, teljes funkcionalitás későbbi fázisokban.
 
-## 9. Ellenőrzőlista Implementálás Előtt
+## 10. Ellenőrzőlista Implementálás Előtt
 - Megfelel-e a SOLID elveknek?
 - Tesztelhetőség biztosítva?
 - Karbantartható és dokumentált?
