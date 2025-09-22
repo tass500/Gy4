@@ -4,13 +4,17 @@
 Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes alkalmazás fejlesztésére, amely mikroszerviz architektúrára épül. A frontend natív JavaScript, HTML és CSS használatával készül, a backend pedig C# .NET alapokon. A fejlesztés során kiemelt hangsúlyt kell fektetni a karbantarthatóságra, tesztelhetőségre és CI/CD folyamatokra. Az adatok tárolása MS SQL Server 2022-ben történik, az alkalmazás támogatja a többnyelvűséget (internationalization - i18n), és teljes akadálymentesítéssel (accessibility - a11y) rendelkezik. Minden kódgenerálás során teszteket kell létrehozni és futtatni, amíg sikeresek nem lesznek, és minden commit előtt az összes tesztet futtatni kell. Minden kódgenerálás mobile-first megközelítéssel történik, prioritizálva a mobil eszközökre optimalizálást.
 
 ## 1. Architektúra és Szerkezet
+- **Több-bérlős (Multi-tenant) Tervezési Minta**: Az alkalmazás több bérlőt támogasson egyetlen alkalmazáspéldányon belül, ahol minden bérlő adatai logikailag el vannak különítve. A megvalósítás során a következő megközelítések egyikét vagy kombinációját alkalmazzuk:
+  - **Adatbázis szintű elválasztás**: Minden bérlő számára külön adatbázis vagy sémakezelés (database/schema per tenant)
+  - **Soronkénti bérlő azonosítás**: Minden táblában legyen egy `TenantId` oszlop a bérlők elkülönítéséhez (soft multi-tenancy)
+  - **Hybrid megoldás**: Kritikus adatok külön adatbázisban, más adatok bérlőnkénti szűréssel
 - **Mikroszerviz Alapú Felépítés**: Az alkalmazás különálló, egymástól független mikroszervizekből álljon, amelyek önállóan telepíthetőek és skálázhatóak. Minden mikroszerviz saját felelősségi körrel rendelkezzen (pl. frontend UI, backend API, adatbázis szolgáltatások, lokalizáció szolgáltatás, akadálymentesítés szolgáltatás).
 - **Elválasztás Frontend és Backend Között**: 
   - **Frontend**: TypeScript és Angular keretrendszer használata komponens alapú fejlesztéshez
   - **Backend**: C# .NET szolgáltatások
   A szolgáltatások külön mikroszervizekben legyenek elhelyezve, RESTful API-kon keresztül kommunikálva egymással.
 - **Moduláris Kód**: Minden komponens moduláris legyen, hogy könnyen újrafelhasználható és cserélhető legyen. Használjon dependency injection-t a .NET backendben és modulrendszert a JavaScriptben.
-- **Adattárolás**: Az adatok tárolása MS SQL Server 2022-ben történik. Minden mikroszerviz saját adatbázis példányt használjon (database-per-service minta) a függetlenség biztosításához, vagy centralizált adatbázist, ha szükséges. Használjon Entity Framework Core (EF Core) a .NET backendben az adatbázis eléréséhez és migrációkhoz. A lokalizált és akadálymentes adatok (pl. alt text, ARIA címkék) külön táblákban vagy JSON oszlopokban tárolódjanak.
+- **Adattárolás**: Az adatok tárolása elsődlegesen MS SQL Server 2022 adatbázisban történik, de az architektúra lehetővé teszi más adatbázisok (pl. PostgreSQL, MySQL) használatát is. Minden mikroszerviz saját adatbázis példányt használjon (database-per-service minta) a függetlenség biztosításához. Használjon Entity Framework Core (EF Core) a .NET backendben az adatbázis eléréséhez és migrációkhoz, repository mintával az adatelérési réteg kiszervezésével. A lokalizált és akadálymentes adatok (pl. alt text, ARIA címkék) külön táblákban vagy JSON oszlopokban tárolódjanak.
 
 ## 2. Karbantarthatóság
 - **Tiszta Kód Elvek**: Kövesse a SOLID elveket (Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion).
@@ -146,13 +150,114 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes 
 - **Verziókezelés**: Git.
 - **CI/CD Eszközök**: GitHub Actions, Azure DevOps, integrálva az adatbázis migrációkkal, lokalizáció fájlokkal és a11y scannerekkel.
 
-## 8. Adattárolás és Adatbázis Specifikus Követelmények
-- **Adatbázis Motor**: MS SQL Server 2022 minden adattároláshoz. Használjon modernebb funkciókat, mint a JSON support, temporal tables és columnstore indexek.
-- **Migrációk**: Entity Framework Core használatával kezelje az adatbázis sémaváltozásokat. Minden migráció legyen verziókezelt és tesztelt.
-- **Biztonság és Optimalizálás**: Connection string-ek biztonságos kezelése (pl. Azure Key Vault), lekérdezések optimalizálása, indexelés.
-- **Backup és Recovery**: Automatizált backup-ok és recovery tervek a CI/CD pipeline-ban.
+## 8. Szoftver Szolgáltatásként (SaaS) és Felhő Támogatás
 
-## 9. Többnyelvűség (Internationalization - i18n) Specifikus Követelmények
+### 8.1 SaaS Alapelvek
+- **Adattitkosítási Szabályzat**: Minden bérlői adat titkosítva legyen tárolva (AES-256 vagy erősebb algoritmusok használatával)
+- **Titkosítási Kulcsok Kezelése**: Centralizált kulcskezelő rendszer (pl. Azure Key Vault, AWS KMS) használata a titkosítási kulcsok biztonságos tárolásához és kezeléséhez
+- **Bérlői Kulcskezelés**: Lehetőség bérlőnkénti egyedi titkosítási kulcsok használatára a szigorúbb adatvédelmi követelmények kielégítéséhez
+- **Bérlői Önkiszolgáló Portál**: Webes felület a bérlők önálló regisztrációjához, konfigurálásához és számlázási adatok kezeléséhez
+- **Szolgáltatási Szintek (Tiering)**: Különböző előfizetési csomagok (pl. Alap, Prémium, Enterprise) eltérő funkciókkal és korlátokkal
+- **Használatalapú Számlázás**: Részletes felhasználói és erőforrás-használati nyilvántartás számlázási célokra
+- **Saját Személyes Adatkezelés (GDPR)**: Eszközök a bérlők számára a felhasználói adatok kezeléséhez és exportálásához
+- **SLA (Szolgáltatási Szint Szerződések)**: Garantált rendelkezésre állás, hibaelhárítási idők és kompenzációs rendszerek
+
+### 8.2 Felhő Támogatás és Üzemeltetés
+
+### 8.2.1 Felhő Platform Függetlenség
+- **Platformfüggetlen Titkosítási Rendszer**: A titkosítási megoldások legyenek függetlenek az alatta lévő felhőplatformtól
+- **Titkosított Tárolókonténer**: Minden tárolási szolgáltatás (blob, file, queue) legyen titkosítva a platform által biztosított mechanizmusokkal
+- **Biztonságos Kommunikáció**: TLS 1.2 vagy újabb használata minden szolgáltatás közötti kommunikációhoz (mTLS a szolgáltatások között)
+- Az alkalmazás legyen kész felhő platformokra történő üzembe helyezésre (Azure, AWS, Google Cloud)
+- Használjon cloud-native megoldásokat, mint a Kubernetes, Docker és Service Mesh technológiák
+- Implementáljon cloud configuratív beállításokat a különböző környezetekhez (fejlesztői, teszt, éles)
+- Használjon Secret Management rendszereket a bizalmas adatok kezeléséhez (Azure Key Vault, AWS Secrets Manager)
+
+### 8.2.2 Skálázhatóság és Megbízhatóság
+- Horizontális skálázás támogatása minden szolgáltatásban
+- Auto-scaling csoportok használata a felhő szolgáltatók eszközeivel
+- Regionális redundancia és Geo-replikáció támogatása
+- Disaster Recovery tervek és automatizált visszaállítási folyamatok
+
+### 8.2.3 CI/CD és Infrastruktúra Mint Kód (IaC)
+- Infrastruktúra kódolása Terraform vagy ARM sablonokkal
+- CI/CD folyamatok beállítása GitHub Actions, Azure DevOps vagy hasonló eszközökkel
+- Blue-Green vagy Canary deployment stratégiák implementálása
+- Automatizált tesztelés minden telepítési fázisban
+
+### 8.2.4 Figyelés és Naplózás
+- Integrált megoldások a felhő szolgáltatók figyelő eszközeivel (Azure Monitor, AWS CloudWatch)
+- Egyéni metrikák és riasztások beállítása
+- Központosított naplózás megoldások használata (ELK stack, Azure Log Analytics)
+- Teljesítményfigyelés és kapacitás tervezés
+
+## 9. SaaS Adatkezelés és Adatbázis Követelmények
+### 9.1 SaaS Adatszigorló Elkülönítés és Tárolás
+- **Adatok Titkosítása Nyugalmi Állapotban**: Minden adat titkosítva legyen tárolva (TDE - Transparent Data Encryption) az adatbázis szintjén
+- **Oszlopszintű Titkosítás**: Bizalmas adatok (pl. személyes azonosításra alkalmas adatok, fizetési információk) esetén oszlopszintű titkosítás alkalmazása
+- **Always Encrypted**: Bizalmas adatok védelme az alkalmazás és az adatbázis közötti átvitel során is (Always Encrypted technológia)
+- **Titkosított Biztonsági Mentések**: Az összes adatbiztonsági mentés titkosítva legyen tárolva külön titkosítási kulcsokkal
+- **Adatszigorló Elkülönítés**: Minden bérlő adatai logikailag és fizikailag el legyenek különítve, megfelelve az iparági szabályozásoknak (GDPR, HIPAA stb.)
+- **Adatbiztonság**: Titkosítás mind a nyugalmi, mind az átvitel alatt álló adatokhoz
+- **Adatbiztonsági mentés és Visszaállítás**: Automatizált, bérlő-specifikus biztonsági mentési és visszaállítási folyamatok
+- **Adatáttelepítés**: Eszközök a bérlők számára az adatok importálásához/exportálásához szabványos formátumokban
+- **Adatmegőrzési szabályok**: Konfigurálható adatmegőrzési szabályok a bérlői adatokhoz
+
+### 9.2 Több-bérlős Adatkezelés
+- **Bérlő Azonosítás**: Minden HTTP kéréssel együtt kötelezően küldendő a bérlő azonosítója (pl. `X-Tenant-Id` fejléc, JWT claim, vagy aldomény)
+- **Adatszűrés**: Automatikus szűrés minden adatbázis lekérdezésnél a bérlő alapján (pl. Entity Framework Core globális szűrőkkel)
+- **Bérlő Kontextus**: A bérlő adatainak elérése a teljes alkalmazásban egységes módon, függetlenül a hívási kontextustól
+- **Bérlő-specifikus konfiguráció**: Minden bérlő számára testreszabható beállítások és konfigurációk kezelése
+- **Teljesítményoptimalizálás**: Gyorsítótárazás a bérlői adatokhoz, különösen a gyakran használt bérlői beállításokhoz
+
+### 9.3 Adatbázis Specifikus Követelmények
+- **Adatbázis Motor**: Elsődleges adatbázisként MS SQL Server 2022 használata, de az architektúra legyen rugalmas más adatbázisok (pl. PostgreSQL, MySQL) támogatásához is. A több-bérlős architektúra keretében külön adatbázis vagy sémakezelés használata bérlőnként. Használjon repository mintát és Dapper-t a nagyobb teljesítményű lekérdezésekhez.
+- **Adatelérési réteg**: Használjon Entity Framework Core-t ORM-ként, repository mintával az adatelérés kiszervezéséhez. Implementáljon Unit of Work mintát a tranzakciók kezeléséhez. Minden adatbázis művelet automatikusan szűrje a bérlői adatokat a beállított bérlői kontextus alapján.
+- **Adatbázis függetlenség**: A kód ne legyen szorosan kötve az adatbázis motorhoz. Használjon DTO-kat az adatok továbbításához a rétegek között. A több-bérlős architektúra megvalósítása ne függjön az adatbázis motor specifikus funkcióitól.
+- **Migrációk**: Entity Framework Core Code-First migrációk használata sémaváltoztatásokhoz. Minden migráció legyen idempotens és verziókezelt. A migrációs rendszer támogassa a bérlő-specifikus sémaváltoztatásokat is.
+- **Teljesítmény**: Használjon indexelést, particionálást és más optimalizációs technikákat. Használjon modernebb funkciókat, mint a JSON support, temporal tables és columnstore indexek. A több-bérlős környezetben különösen fontos a megfelelő indexelés a bérlői szűrők mellett.
+- **Biztonság**: Connection string-ek biztonságos kezelése (pl. Azure Key Vault), szerepkör-alapú hozzáférés-vezérlés (RBAC), adattitkosítás nyugalmi és tranzakció közbeni állapotban is. A bérlők közötti adatszigorló elkülönítésének biztosítása. Minden adatbázis művelet ellenőrizze a bérlői engedélyeket.
+- **Backup és Recovery**: Automatizált backup-ok és recovery tervek a CI/CD pipeline-ban. Több rétegű biztonsági mentési stratégia (teljes, differenciális, tranzakciónapló). A bérlői adatok különálló biztonsági mentése és visszaállítása lehetősége. Bérlői adatok exportálása és importálása standard formátumban.
+
+## 10. SaaS Szolgáltatás Menedzsment
+
+### 10.1 Bérlői Életciklus Kezelés
+- **Regisztráció és Aktiválás**: Automatizált folyamatok az új bérlők felvételéhez és aktiválásához
+- **Fiókkezelés**: Önkiszolgáló eszközök a bérlők számára a fiókbeállítások kezeléséhez
+- **Előfizetéskezelés**: Szolgáltatáscsomagok frissítése, lefokozása és lemondása
+- **Felfüggesztés és Törlés**: Biztonságos folyamatok inaktív fiókok kezeléséhez és adatok végleges törléséhez
+- **Visszaállítási lehetőségek**: Törölt bérlők időszakos visszaállításának lehetősége
+
+### 10.2 Számlázás és Használati Díjak Nyomon Követése
+- **Fizetési Adatok Titkosítása**: Minden fizetési kártya adat (PCI DSS szabványnak megfelelően) titkosítva legyen tárolva
+- **Titkosított Tárterület a Számlákhoz**: A generált számlák és pénzügyi dokumentumok titkosítva legyenek tárolva
+- **Biztonságos Fizetési Folyamat**: A fizetési folyamat során az érzékeny adatok soha ne kerüljenek a rendszerünk szervereire (pl. Stripe, Braintree használata)
+- **Naplózási Adatok Titkosítása**: A biztonsági naplók és audit trail-ek titkosítva legyenek tárolva
+- **Használati metrikák**: Részletes nyomon követés az erőforrás-használatról (tárhely, API hívások, felhasználók száma stb.)
+- **Számlázási ciklusok**: Támogatás havi, negyedéves és éves számlázási ciklusokhoz
+- **Többfajta fizetési mód**: Bankkártya, banki átutalás és egyéb fizetési módok támogatása
+- **Számla előnézet és letöltés**: Önkiszolgáló felület a számlák megtekintéséhez és letöltéséhez
+- **Pénzügyi jelentések**: Részletes jelentések a bérleti díjakról és a használati díjakról
+
+## 11. Biztonsági Követelmények és Titkosítási Szabályok
+
+### 11.1 Adatvédelem és Titkosítás
+- **Adatbesorolási Szabályzat**: Minden adatot besorolni kell érzékenységi szint szerint, és ennek megfelelően kell kezelni a titkosítási követelményeket
+- **Titkosítási Szabványok**: A titkosításhoz csak iparági szabványnak megfelelő algoritmusok használata (AES-256, RSA-2048, SHA-256)
+- **Kulcs Életciklus Kezelés**: A titkosítási kulcsok életciklusának kezelése (generálás, használat, forgatás, archiválás, megsemmisítés)
+- **Titkosított Kommunikáció**: Minden API hívás és szolgáltatások közötti kommunikáció TLS 1.2 vagy újabb titkosítással
+- **Titkosított Munkamenetek**: Felhasználói munkamenetek védelme HTTPS és biztonságos sütik használatával
+- **Forráskód Titkosítás**: A forráskódban tárolt bizalmas adatok (pl. jelszavak, kulcsok) titkosítása és biztonságos kezelése
+- **Titkosított Üzenetsor-kezelés**: Az aszinkron üzenetkezelés során az üzenetek tartalmának titkosítása (pl. Azure Service Bus, RabbitMQ TLS)
+
+### 11.2 Biztonságos Fejlesztési Eljárások
+- **Biztonságos Kódolási Gyakorlatok**: OWASP Top 10 alapján biztonságos kód írása
+- **Titkosítási Könyvtárak**: Csak jól auditált, széles körben használt titkosítási könyvtárak használata
+- **Biztonsági Tesztelés**: Rendszeres biztonsági auditok és penetrációs tesztek végrehajtása
+- **Sejthető Adatok Titkosítása**: Minden olyan adat titkosítása, amelyből más adatokat lehet következtetni (pl. email címek, felhasználónevek)
+- **Titkosított Naplózás**: A naplózott érzékeny adatok titkosítása
+
+## 12. Többnyelvűség (Internationalization - i18n) Specifikus Követelmények
 - **Frontend Lokalizáció**: Használjon i18next vagy hasonló könyvtárat a JavaScriptben. Lokalizáció fájlok (pl. JSON) minden támogatott nyelvhez (pl. hu.json, en.json). Dinamikus nyelv váltás a felhasználó beállítása alapján.
 - **Backend Lokalizáció**: .NET beépített IStringLocalizer használata. Resource fájlok (resx) minden nyelvhez. Kulturális beállítások kezelése (pl. CultureInfo).
 - **Adatbázis Támogatás**: Lokalizált szövegek tárolása külön táblákban vagy JSON oszlopokban, hogy kulturális szempontból kezelhetők legyenek.
@@ -165,6 +270,13 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív webes 
 - **Backend Támogatás**: API-k biztosítsák a strukturált adatokat (pl. JSON-LD), hogy képernyőolvasók használhassák.
 - **Tesztelés**: Automatizált a11y scannerek (pl. axe-core, Lighthouse Accessibility audit) minden build során. Manuális tesztelés különböző eszközökkel (pl. képernyőolvasók).
 - **CI/CD Integráció**: A11y ellenőrzések automatizálása, sikertelen build, ha nem felel meg a WCAG 2.1-nek.
+
+## 10.1 Több-bérlős Tesztelés
+- **Egységtesztek**: Minden bérlő-specifikus logikához írjanak egységteszteket, amelyek ellenőrzik a bérlői elkülönítést
+- **Integrációs tesztek**: Teszteljék a bérlők közötti adatszigorló elkülönítését
+- **Teljesítménytesztek**: Ellenőrizzék az alkalmazás viselkedését nagy számú bérlő esetén
+- **Bérlő-kezelő felület**: Teszteljék a bérlők létrehozását, módosítását és törlését
+- **Adatáttelepítés**: Automatizált tesztek a bérlői adatok migrációjához
 
 ## 11. Kódgenerálás és Tesztelési Folyamat
 - **Automatizált Teszt Generálás**: Minden kódgenerálás során (pl. új függvény, osztály, mikroszerviz) automatikusan generáljon unit és integrációs teszteket a generált kódhoz. Használjon eszközöket, mint a Jest/Mocha (JS) vagy xUnit (C#) a tesztgeneráláshoz.
