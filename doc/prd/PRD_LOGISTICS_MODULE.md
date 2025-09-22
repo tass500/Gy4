@@ -5,7 +5,7 @@ Ez a dokumentum meghatározza a követelményeket egy modern, reszponzív logisz
 
 ### Főbb technológiák
 - **Frontend**: 
-  - TypeScript, Angular 14+
+  - TypeScript, Angular 19+
   - NgRx állapotkezelés
   - i18next lokalizáció
   - OWASP biztonsági irányelvek

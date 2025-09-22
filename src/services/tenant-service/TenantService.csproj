@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Disable package source restoration during build -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core ASP.NET Core packages -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    
+    <!-- Entity Framework Core packages -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.4" />
+    
+    <!-- Logging -->
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    
+    <!-- JSON serialization -->
+    <PackageReference Include="System.Text.Json" Version="9.0.9" />
+  </ItemGroup>
+
+  <!-- Disable default NuGet sources and use only what's in nuget.config -->
+  <PropertyGroup>
+    <RestoreSources>
+      https://api.nuget.org/v3/index.json;
+      https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json;
+    </RestoreSources>
+    <RestoreAdditionalProjectSources>
+      $(RestoreSources);
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+</Project>
