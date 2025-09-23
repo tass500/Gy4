@@ -11,6 +11,12 @@ A Logistics Service a logisztikai folyamatok központi koordinálásáért felel
 - [ ] Valós idejű rendelés követés
 - [ ] Kivételek kezelése és riasztások
 - [ ] Teljesítmény és hatékonyság elemzése
+- [ ] Szállítási útvonalak tervezése
+- [ ] Fuvarok nyomon követése
+- [ ] Szállítási költségek optimalizálása
+- [ ] Dinamikus logisztikai nyomtatványok kezelése
+- [ ] Egyéni mezők a logisztikai folyamatokhoz
+- [ ] Testreszabott útvonaltervezési szabályok
 
 ### 2.2 Felhasználói történetek
 - **Mint rendeléskezelő szeretném követni egy rendelés állapotát, hogy informálhassam a vásárlót**
@@ -55,14 +61,18 @@ A Logistics Service a logisztikai folyamatok központi koordinálásáért felel
 
 ## 6. Integrációk
 - **Order Service**: Rendelések fogadása
-- **Warehouse Service**: Készlet ellenőrzés és kivételezés
-- **Shipping Service**: Szállítási információk frissítése
-- **Billing Service**: Számla generálás
+- **Warehouse Service**: Raktári műveletek szinkronizálása
+- **Shipping Service**: Szállítási információk kezelése
+- **Billing Service**: Szállítási költségek számlázása
+- **Form Builder Service**: Dinamikus űrlapok a logisztikai folyamatokhoz
 - **Notification Service**: Állapotváltozások értesítése
 
 ## 7. Figyelés és naplózás
-- Rendelés életciklus nyomon követése
-- Teljesítmény metrikák gyűjtése
+- Logisztikai műveletek naplózása
+- Teljesítménymutatók nyomon követése
+- Késések és problémák nyilvántartása
+- Űrlapváltoztatások naplózása
+- Egyéni mezők használati statisztikái
 - Rendellenességek észlelése
 - Riasztások beállítása kritikus eseményekre
 
@@ -79,8 +89,11 @@ A Logistics Service a logisztikai folyamatok központi koordinálásáért felel
 - Korlátozott számú egyéni munkafolyamat kezdetben
 
 ## 10. Jövőbeli fejlesztések
-- Mesterséges intelligencia alapú előrejelzések
-- Automatikus útvonaloptimalizálás
-- Valós idejű követési térkép
+- Több szállítmányozó integrációja
+- Haladó útvonaloptimalizálás
+- Valós idejű forgalmi információk integrálása
+- AI-alapú szállítási időbecslés
+- Automatikus útvonaltervezés időjárási viszonyok alapján
+- Fenntartható logisztikai megoldások
 - Önkiszolgáló visszaküldési portál
 - Haladó analitikák és jelentések

@@ -5,13 +5,13 @@ A Warehouse Service felelős a raktári műveletek kezeléséért, beleértve a 
 
 ## 2. Funkcionális követelmények
 
-### 2.1 Főbb funkciók
-- [ ] Készletnyilvántartás (inventory management)
-- [ ] Raktárhelyek kezelése (locations, zones)
-- [ ] Bevételezés (goods receipt)
-- [ ] Kivételezés (picking)
-- [ ] Készletmozgások nyomon követése
-- [ ] Készletkorrekciók kezelése
+### 2.1 Készletkezelés
+- [ ] Készletnyilvántartás nyomon követése valós időben
+- [ ] Készletmozgások rögzítése (bevételezés, kiadás, átmozgatás)
+- [ ] Készletszint figyelése és riasztások
+- [ ] Dinamikus raktári nyomtatványok kezelése
+- [ ] Egyéni mezők a termékekhez és készletekhez
+- [ ] Testreszabott riasztási szabályok
 
 ### 2.2 Felhasználói történetek
 - **Mint raktáros szeretnék bevételezni új árut, hogy a készlet naprakész legyen**
@@ -59,13 +59,17 @@ A Warehouse Service felelős a raktári műveletek kezeléséért, beleértve a 
 
 ## 6. Integrációk
 - **Product Service**: Termékadatok szinkronizálása
-- **Order Service**: Rendelések feldolgozása
-- **Shipping Service**: Szállítási információk frissítése
+- **Order Service**: Rendelések fogadása és feldolgozása
+- **Shipping Service**: Szállítási információk szinkronizálása
+- **Notification Service**: Készletfigyelő értesítések
+- **Form Builder Service**: Dinamikus űrlapok kezelése a raktári folyamatokhoz
 
 ## 7. Figyelés és naplózás
 - Készletváltozások naplózása
 - Raktári műveletek nyomon követése
 - Késleltetések és szűk keresztmetszetek azonosítása
+- Űrlapváltoztatások naplózása
+- Egyéni mezők használati statisztikái
 
 ## 8. Telepítés és üzemeltetés
 ### 8.1 Követelmények
@@ -82,3 +86,6 @@ A Warehouse Service felelős a raktári műveletek kezeléséért, beleértve a 
 - Haladó raktározási stratégiák (FIFO, LIFO, FEFO)
 - Automata raktározási javaslatok
 - Mobilalkalmazás támogatás raktári műveletekhez
+- AI-alapú készletoptimalizálás
+- Valós idejű raktár térképes megjelenítése
+- Hangvezérelt raktári műveletek

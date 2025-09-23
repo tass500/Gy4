@@ -62,15 +62,18 @@ A Shipping Service felelős a szállítási folyamatok kezeléséért, beleértv
   - Dimensions: string
 
 ## 6. Integrációk
-- **Order Service**: Rendelések fogadása
-- **Warehouse Service**: Készletfrissítések
+- **Order Service**: Rendelési információk szinkronizálása
+- **Warehouse Service**: Raktári készlet ellenőrzése
+- **Notification Service**: Szállítási állapotértesítések
+- **Form Builder Service**: Dinamikus űrlapok a szállítási folyamatokhoz
 - **Carrier APIs**: Szállítmányozókkal való kommunikáció
-- **Notification Service**: Állapotváltozások értesítése
 
 ## 7. Figyelés és naplózás
 - Szállítási állapotváltozások naplózása
 - API hívások nyomon követése
 - Hibák és kivételek figyelése
+- Űrlapváltoztatások naplózása
+- Egyéni mezők használati statisztikái
 
 ## 8. Telepítés és üzemeltetés
 ### 8.1 Követelmények

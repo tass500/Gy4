@@ -12,7 +12,18 @@ A Tenant Service felelős a több-bérlős architektúra kezeléséért, beleér
 - [ ] Bérlői kvóták és korlátok kezelése
 - [ ] Bérlői adatok exportálása és importálása
 
-### 2.2 Felhasználói történetek
+### 2.2 Dinamikus űrlapkészítő rendszer
+- Felhasználóbarát felület a mezők tervezéséhez
+- Több típusú mező támogatása (szöveg, szám, dátum, legördülő lista, stb.)
+- Mezők kötelezőségének beállítása
+- Egyéni validációs szabályok meghatározása
+- Mezők sorrendjének módosítása
+- Előnézet funkció a tervezett űrlapról
+- Mezőcsoportok létrehozása és kezelése
+- Űrlap verziókövetése
+- Export/import funkció az űrlapdefiníciókhoz
+
+### 2.3 Felhasználói történetek
 - **Mint rendszergazda szeretnék új bérlőt regisztrálni, hogy hozzáférjenek a rendszerhez**
   - Kötelező adatok: bérlő neve, admin email, csomag típusa
   - Automatikus üdvözlő email küldése
@@ -23,6 +34,13 @@ A Tenant Service felelős a több-bérlős architektúra kezeléséért, beleér
 - Válaszidő: < 100ms
 - Egyidejű bérlői műveletek kezelése: 100+
 - Adatbázis teljesítmény optimalizálás több bérlő esetén
+- Teljesítmény: Válaszidő < 200ms 95%-os percentilisben
+- Rendelkezésre állás: 99,9%
+- Biztonság: JWT alapú hitelesítés és engedélyezés
+- Skálázhatóság: Támogatja a horizontális skálázást
+- Felhasználói élmény: Intuitív, húzd és ejtsd felület az űrlapszerkesztéshez
+- Teljesítmény: Dinamikusan generált űrlapok gyors betöltése
+- Biztonság: XSS és más webes biztonsági rések elleni védelem
 
 ### 3.2 Biztonság
 - Hitelesítés: JWT token
@@ -60,6 +78,8 @@ A Tenant Service felelős a több-bérlős architektúra kezeléséért, beleér
 - Bérlői műveletek naplózása
 - Kritérikus metrikák nyomon követése
 - Riasztások beállítása fontos eseményekre
+- Űrlapváltoztatások naplózása (ki, mikor, mit módosított)
+- Validációs hibák statisztikái
 
 ## 8. Telepítés és üzemeltetés
 ### 8.1 Követelmények
@@ -75,3 +95,6 @@ A Tenant Service felelős a több-bérlős architektúra kezeléséért, beleér
 - Több adatbázis támogatása bérlőnként
 - Önkiszolgáló bérlői portál
 - Speciális bérlői analitikák
+- Űrlapok tervezése AI segítségével
+- Többnyelvű űrlapok támogatása
+- Komplex feltételes megjelenítési szabályok

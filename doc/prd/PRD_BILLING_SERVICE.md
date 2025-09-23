@@ -5,9 +5,13 @@ A Billing Service felelős a számlázási folyamatok kezeléséért, beleértve
 
 ## 2. Funkcionális követelmények
 
-### 2.1 Főbb funkciók
+### 2.1 Számlázás
 - [ ] Automatikus számlagenerálás
-- [ ] Ismétlődő számlázás (subscription) kezelése
+- [ ] Többféle pénznem támogatása
+- [ ] Adószámítások kezelése
+- [ ] Dinamikus számla sablonok kezelése
+- [ ] Egyéni mezők a számlákhoz és kifizetésekhez
+- [ ] Testreszabott számla jóváhagyási folyamatok
 - [ ] Fizetési módok kezelése (bankkártya, átutalás, stb.)
 - [ ] Adózási számítások
 - [ ] Visszatérítések kezelése
@@ -67,15 +71,17 @@ A Billing Service felelős a számlázási folyamatok kezeléséért, beleértve
   - LineTotal: decimal
 
 ## 6. Integrációk
-- **Payment Gateway**: Fizetések feldolgozása
-- **Customer Service**: Ügyféladatok szinkronizálása
-- **Tax Service**: Adószámítások
-- **Notification Service**: Számlaértesítések küldése
+- **Order Service**: Rendelési adatok szinkronizálása
+- **Payment Service**: Fizetések feldolgozása
+- **Notification Service**: Számla és fizetési emlékeztetők
+- **Form Builder Service**: Dinamikus űrlapok a számlázási folyamatokhoz
 
 ## 7. Figyelés és naplózás
 - Minden pénzügyi tranzakció naplózása
 - Rendellenességek észlelése
 - Jelentések generálása
+- Űrlapváltoztatások naplózása
+- Egyéni mezők használati statisztikái
 
 ## 8. Telepítés és üzemeltetés
 ### 8.1 Követelmények
@@ -93,5 +99,8 @@ A Billing Service felelős a számlázási folyamatok kezeléséért, beleértve
 - Több fizetési átjáró támogatása
 - Automatikus követeléskezelés
 - Haladó pénzügyi analitikák
+- AI-alapú késedelmi kockázat elemzés
+- Automatikus költségvetés tervezés
+- Valós idejű pénzügyi riportok
 - Többpénznámű számlázás
 - Automatikus adóbevallás generálás
